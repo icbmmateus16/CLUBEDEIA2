@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plano de Trabalho Interativo – Clube de Inteligência Artificial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script>
+        // Configuração do Tailwind CSS para o modo escuro
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <style>
+        /* Estilos personalizados */
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-print-color-adjust: exact;
+            overflow-x: hidden; /* Previne scroll horizontal */
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .print-container { box-shadow: none !important; border: none !important; }
+            details { page-break-inside: avoid; }
+            details[open] { display: block; }
+            .tooltip-container::after { display: none !important; }
+        }
+        .section-icon { width: 24px; height: 24px; stroke-width: 2; }
+        :root { --ovg-blue: #005A9C; --ovg-pink: #d85a9a; --ovg-yellow: #d3c034; --ovg-purple: #5e7dbe; }
+        .text-ovg-blue { color: var(--ovg-blue); }
+        .bg-ovg-blue { background-color: var(--ovg-blue); }
+        .border-ovg-blue { border-color: var(--ovg-blue); }
+
+        /* Tooltips */
+        .tooltip-container { position: relative; cursor: help; border-bottom: 2px dotted var(--ovg-blue); }
+        .tooltip-container::after { content: attr(data-tooltip); position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%); background-color: #333; color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 14px; white-space: nowrap; opacity: 0; visibility: hidden; transition: opacity 0.2s, visibility 0.2s; z-index: 10; }
+        .tooltip-container:hover::after { opacity: 1; visibility: visible; }
+
+        /* Animação de Scroll */
+        .fade-in-section { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .fade-in-section.is-visible { opacity: 1; transform: translateY(0); }
+        
+        /* Barra de Progresso com Gradiente */
+        #progress-bar-container { position: fixed; top: 0; left: 0; width: 100%; height: 4px; background-color: transparent; z-index: 9999; }
+        #progress-bar { height: 100%; background: linear-gradient(to right, var(--ovg-pink), var(--ovg-yellow), var(--ovg-purple)); width: 0%; transition: width 0.1s ease-out; }
+
+        /* Navegação Rápida */
+        #quick-nav { position: fixed; left: 20px; top: 50%; transform: translateY(-50%); z-index: 50; }
+        #quick-nav ul { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+        #quick-nav ul li a { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        #quick-nav .nav-dot { width: 8px; height: 8px; background-color: #d1d5db; border-radius: 9999px; transition: all 0.2s ease-in-out; }
+        .dark #quick-nav .nav-dot { background-color: #4b5563; }
+        #quick-nav .nav-text { opacity: 0; visibility: hidden; transition: all 0.2s ease-in-out; transform: translateX(-10px); color: #6b7280; font-size: 12px; font-weight: 500; white-space: nowrap; }
+        .dark #quick-nav .nav-text { color: #9ca3af; }
+        #quick-nav:hover .nav-text { opacity: 1; visibility: visible; transform: translateX(0); }
+        #quick-nav ul li a.active .nav-dot { background-color: var(--ovg-blue); transform: scale(1.5); }
+        .dark #quick-nav ul li a.active .nav-dot { background-color: #60a5fa; }
+        #quick-nav ul li a.active .nav-text { color: var(--ovg-blue); font-weight: 700; opacity: 1; visibility: visible; transform: translateX(0); }
+        .dark #quick-nav ul li a.active .nav-text { color: #60a5fa; }
+
+        /* Efeito Holofote */
+        .resource-cards-container:hover .resource-card:not(:hover) { opacity: 0.5; transform: scale(0.97); }
+        .resource-card { transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; }
+
+        /* Linha do Tempo da Metodologia */
+        .timeline-item { display: flex; position: relative; }
+        .timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 1rem;
+            top: 2.5rem;
+            width: 2px;
+            height: calc(100% - 1rem);
+            background-color: #e5e7eb;
+        }
+        .dark .timeline-item:not(:last-child)::before { background-color: #4b5563; }
+        .timeline-icon {
+            position: absolute;
+            left: 0;
+            top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 9999px;
+            background-color: var(--ovg-blue);
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+
+    <!-- Barra de Progresso de Leitura -->
+    <div id="progress-bar-container" class="no-print">
+        <div id="progress-bar"></div>
+    </div>
+
+    <!-- Navegação Rápida (Desktop) -->
+    <nav id="quick-nav" class="hidden lg:block no-print">
+        <ul>
+            <li><a href="#section-destaques"><span class="nav-dot"></span><span class="nav-text">Destaques</span></a></li>
+            <li><a href="#section-instrutor"><span class="nav-dot"></span><span class="nav-text">O Instrutor</span></a></li>
+            <li><a href="#section-local"><span class="nav-dot"></span><span class="nav-text">O Local</span></a></li>
+            <li><a href="#section-1"><span class="nav-dot"></span><span class="nav-text">Identificação</span></a></li>
+            <li><a href="#section-3"><span class="nav-dot"></span><span class="nav-text">Objetivo</span></a></li>
+            <li><a href="#section-4"><span class="nav-dot"></span><span class="nav-text">Metodologia</span></a></li>
+            <li><a href="#section-5"><span class="nav-dot"></span><span class="nav-text">Recursos</span></a></li>
+            <li><a href="#section-6"><span class="nav-dot"></span><span class="nav-text">Impacto</span></a></li>
+            <li><a href="#section-7"><span class="nav-dot"></span><span class="nav-text">Avaliação</span></a></li>
+            <li><a href="#section-gemini"><span class="nav-dot"></span><span class="nav-text">Explorar Projetos</span></a></li>
+        </ul>
+    </nav>
+
+    <!-- Botões de Ação Flutuantes -->
+    <div class="no-print fixed bottom-6 right-6 flex flex-col gap-3 z-[10000]">
+        <button id="darkModeToggle" class="bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-3 rounded-full shadow-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900 transition-all">
+            <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+        </button>
+        <button id="share-button" class="bg-ovg-blue text-white p-3 rounded-full shadow-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900 transition-transform transform hover:scale-110">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        </button>
+         <a href="#section-gemini" class="bg-ovg-blue text-white p-3 rounded-full shadow-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900 transition-transform transform hover:scale-110">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+        </a>
+    </div>
+
+    <div class="max-w-4xl mx-auto p-4 sm:p-8 print-container">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-12 transition-colors duration-300">
+
+            <!-- Cabeçalho com Logos -->
+            <header class="text-center pb-6 mb-8">
+                <div class="flex justify-center items-center gap-4 md:gap-8 mb-8">
+                    <img src="https://i.imgur.com/kEwdP2R.png" alt="Logo do Governo de Goiás" class="h-24 sm:h-28 md:h-32 lg:h-40 object-contain" onerror="this.style.display='none'; this.onerror=null;">
+                    <img src="https://i.imgur.com/9CoT7kf.png" alt="Logo da OVG" class="h-24 sm:h-28 md:h-32 lg:h-40 object-contain" onerror="this.style.display='none'; this.onerror=null;">
+                    <img src="https://i.imgur.com/jOITFl9.png" alt="Logo do Centro da Juventude Tecendo o Futuro" class="h-24 sm:h-28 md:h-32 lg:h-40 object-contain" onerror="this.style.display='none'; this.onerror=null;">
+                </div>
+                <div class="border-t-2 border-b-2 border-gray-200 dark:border-gray-700 py-6">
+                    <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-widest uppercase">Plano de Trabalho</h2>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-ovg-blue mt-2">Clube de Inteligência Artificial</h1>
+                </div>
+            </header>
+
+            <main class="space-y-12">
+                <!-- Seção de Destaques -->
+                <section id="section-destaques" class="fade-in-section">
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <span class="text-3xl font-bold text-ovg-blue dark:text-blue-300 counter" data-target="12">0</span>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Idade Mínima</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <span class="text-3xl font-bold text-ovg-blue dark:text-blue-300 counter" data-target="21">0</span>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Idade Máxima</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <span class="text-3xl font-bold text-ovg-blue dark:text-blue-300 counter" data-target="4">0</span>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Meses de Duração</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <span class="text-3xl font-bold text-ovg-blue dark:text-blue-300 counter" data-target="3">0</span>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Pilares do Projeto</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Seção O Instrutor -->
+                <section id="section-instrutor" class="fade-in-section">
+                     <h3 class="flex items-center text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 border-b dark:border-gray-600 pb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="section-icon mr-3 text-ovg-blue"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        O Instrutor
+                    </h3>
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 flex flex-col md:flex-row items-center gap-6">
+                        <img src="https://i.imgur.com/y6qNaFA.jpeg" alt="Foto de Mateus Correia" class="w-32 h-32 rounded-full object-cover shadow-lg border-4 border-white dark:border-gray-600">
+                        <div class="text-center md:text-left">
+                            <h4 class="text-xl font-bold text-gray-900 dark:text-white">Mateus Correia</h4>
+                            <p class="text-md text-ovg-blue font-semibold">Instrutor de Nível Superior</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-2">Pesquisador em IA nas áreas de visão computacional e engenharia biomédica, com foco em machine learning aplicado à neurociência.</p>
+                        </div>
+                    </div>
+                </section>
+
+                 <!-- Seção O Local -->
+                <section id="section-local" class="fade-in-section">
+                     <h3 class="flex items-center text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 border-b dark:border-gray-600 pb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="section-icon mr-3 text-ovg-blue"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        O Local do Projeto
+                    </h3>
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 flex flex-col md:flex-row items-center gap-6">
+                         <img src="https://i.imgur.com/sUY8Nxe.jpeg" alt="Foto do Centro da Juventude Tecendo o Futuro" class="w-full sm:w-2/3 md:w-1/3 h-auto rounded-lg object-cover shadow-lg">
+                        <div class="text-center md:text-left">
+                            <h4 class="text-xl font-bold text-gray-900 dark:text-white">Centro da Juventude Tecendo o Futuro</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-2">É um espaço voltado para o fortalecimento de vínculos familiares e sociais, geração de oportunidades de acesso à renda e profissionalização, com resultados na redução da vulnerabilidade e risco social. A unidade desenvolve dois programas com ações distintas: Programa Juventude Tecendo o Futuro e Programa Meninas de Luz.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Seção 1: Identificação -->
+                <section id="section-1" class="fade-in-section">
+                    <h3 class="flex items-center text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 border-b dark:border-gray-600 pb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="section-icon mr-3 text-ovg-blue"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        1. Identificação do Projeto
+                    </h3>
+                    <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg border border-gray-200 dark:border-gray-600 space-y-3">
+                        <p class="text-gray-700 dark:text-gray-300">
+                            <strong class="font-medium text-gray-800 dark:text-gray-100">Nome do Clube:</strong> 
+                            Núcleo de Inovação e Pesquisa Jovem
+                            <em class="text-sm text-gray-500 dark:text-gray-400 block sm:inline mt-1 sm:mt-0">(Nome provisório, o título oficial será definido em votação com os participantes)</em>
+                        </p>
+                        <p class="text-gray-700 dark:text-gray-300"><strong class="font-medium text-gray-800 dark:text-gray-100">Vinculação:</strong> Centro da Juventude Tecendo o Futuro – OVG</p>
+                        <p class="text-gray-700 dark:text-gray-300"><strong class="font-medium text-gray-800 dark:text-gray-100">Serviço:</strong> Serviço de Convivência e Fortalecimento de Vínculos</p>
+                    </div>
+                </section>
+
+                <!-- Citação de Impacto -->
+                <section id="section-3" class="fade-in-section">
+                     <h3 class="flex items-center text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 border-b dark:border-gray-600 pb-2">
+                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="section-icon mr-3 text-ovg-blue"><circle cx="12"cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                        3. Objetivo Principal
+                    </h3>
+                    <div class="relative bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                        <svg class="absolute top-2 left-2 w-8 h-8 text-gray-200 dark:text-gray-600" fill="currentColor" viewBox="0 0 16 16"><path d="M12 12a1 1 0 0 0 1-1V8.558a1 1 0 0 0-1-1h-1.388c0-.351.021-.703.062-1.054.062-.372.166-.703.31-.992.145-.29.331-.517.559-.683.227-.186.516-.279.868-.279V3c-.579 0-1.085.124-1.52.372a3.322 3.322 0 0 0-1.085.992 4.92 4.92 0 0 0-.62 1.458A7.712 7.712 0 0 0 9 7.558V11a1 1 0 0 0 1 1h2Zm-6 0a1 1 0 0 0 1-1V8.558a1 1 0 0 0-1-1H4.612c0-.351.021-.703.062-1.054.062-.372.166-.703.31-.992.145-.29.331-.517.559-.683.227-.186.516-.279.868-.279V3c-.579 0-1.085.124-1.52.372a3.322 3.322 0 0 0-1.085.992 4.92 4.92 0 0 0-.62 1.458A7.712 7.712 0 0 0 3 7.558V11a1 1 0 0 0 1 1h2Z"/></svg>
+                        <p class="text-center text-xl italic text-gray-800 dark:text-gray-200 py-4 z-10 relative">"Criar um ambiente colaborativo, investigativo e inovador, onde jovens possam explorar, discutir e desenvolver ideias e soluções utilizando Inteligência Artificial."</p>
+                         <svg class="absolute bottom-2 right-2 w-8 h-8 text-gray-200 dark:text-gray-600" fill="currentColor" viewBox="0 0 16 16"><path d="M12 12a1 1 0 0 0 1-1V8.558a1 1 0 0 0-1-1h-1.388c0-.351.021-.703.062-1.054.062-.372.166-.703.31-.992.145-.29.331-.517.559-.683.227-.186.516-.279.868-.279V3c-.579 0-1.085.124-1.52.372a3.322 3.322 0 0 0-1.085.992 4.92 4.92 0 0 0-.62 1.458A7.712 7.712 0 0 0 9 7.558V11a1 1 0 0 0 1 1h2Zm-6 0a1 1 0 0 0 1-1V8.558a1 1 0 0 0-1-1H4.612c0-.351.021-.703.062-1.054.062-.372.166-.703.31-.992.145-.29.331-.517.559-.683.227-.186.516-.279.868-.279V3c-.579 0-1.085.124-1.52.372a3.322 3.322 0 0 0-1.085.992 4.92 4.92 0 0 0-.62 1.458A7.712 7.712 0 0 0 3 7.558V11a1 1 0 0 0 1 1h2Z"/></svg>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center mt-6">
+                        <div class="bg-blue-50 dark:bg-gray-700 p-4 rounded-lg flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-ovg-blue"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><span class="font-semibold text-gray-700 dark:text-gray-200">Explorar</span></div>
+                        <div class="bg-blue-50 dark:bg-gray-700 p-4 rounded-lg flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-ovg-blue"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span class="font-semibold text-gray-700 dark:text-gray-200">Discutir</span></div>
+                        <div class="bg-blue-50 dark:bg-gray-700 p-4 rounded-lg flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-ovg-blue"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg><span class="font-semibold text-gray-700 dark:text-gray-200">Desenvolver</span></div>
+                    </div>
+                </section>
+                
+                <section id="section-2" class="hidden"> ... </section>
+
+                <!-- Metodologia com Linha do Tempo -->
+                <section id="section-4" class="fade-in-section">
+                     <h3 class="flex items-center text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 border-b dark:border-gray-600 pb-2">
+                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="section-icon mr-3 text-ovg-blue"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                        4. Metodologia e Cronograma
+                    </h3>
+                    <div class="mt-8">
+                        <!-- Mês 1 -->
+                        <div class="timeline-item">
+                            <div class="timeline-icon">1</div>
+                            <div class="ml-10 pl-4 pb-12">
+                                <h4 class="text-lg font-semibold text-ovg-blue dark:text-blue-300">1º Mês – Fundação e Inspiração</h4>
+                                <ul class="list-disc list-inside mt-2 text-gray-700 dark:text-gray-300 space-y-1">
+                                    <li>Criação do <span class="tooltip-container" data-tooltip="Documento com os princípios e objetivos do grupo.">manifesto</span> do grupo e definição do nome.</li>
+                                    <li>Sessões de vídeos e debates sobre IA (ex: AlphaGo, O Dilema das Redes).</li>
+                                    <li><span class="tooltip-container" data-tooltip="Técnica de discussão em grupo para gerar novas ideias.">Brainstorm</span> coletivo sobre interesses e possibilidades de projetos.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- Mês 2-3 -->
+                        <div class="timeline-item">
+                            <div class="timeline-icon">2</div>
+                            <div class="ml-10 pl-4 pb-12">
+                                <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-100">2º e 3º Mês – Exploração e Prototipagem</h4>
+                                <ul class="list-disc list-inside mt-2 text-gray-700 dark:text-gray-300 space-y-1">
+                                    <li>Organização de subgrupos por afinidade (<span class="tooltip-container" data-tooltip="Tecnologia que permite que computadores 'vejam' e interpretem imagens.">visão computacional</span>, ética, bots, etc.).</li>
+                                    <li>Testes com ferramentas como <a href="https://opencv.org/" target="_blank" class="text-blue-600 hover:underline">OpenCV</a>, <a href="https://teachablemachine.withgoogle.com/" target="_blank" class="text-blue-600 hover:underline">Teachable Machine</a>, <a href="https://mediapipe.dev/" target="_blank" class="text-blue-600 hover:underline">MediaPipe</a> e <a href="https://chat.openai.com/" target="_blank" class="text-blue-600 hover:underline">ChatGPT</a>.</li>
+                                    <li>Desenvolvimento livre de <span class="tooltip-container" data-tooltip="Versões iniciais e funcionais de um projeto ou ideia.">protótipos</span> (ex: bots de conversa, classificadores de imagens).</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- Mês 4 -->
+                        <div class="timeline-item">
+                            <div class="timeline-icon">3</div>
+                            <div class="ml-10 pl-4">
+                                <h4 class="text-lg font-semibold text-ovg-blue dark:text-blue-300">4º Mês – Compartilhamento e Expansão</h4>
+                                <ul class="list-disc list-inside mt-2 text-gray-700 dark:text-gray-300 space-y-1">
+                                    <li>Organização de uma Mostra Interna/Externa com apresentação dos resultados.</li>
+                                    <li>Criação de <span class="tooltip-container" data-tooltip="Local centralizado para armazenar e gerenciar arquivos digitais.">repositório digital</span> dos trabalhos (<a href="https://github.com/" target="_blank" class="text-blue-600 hover:underline">GitHub</a>, <a href="https://www.google.com/drive/" target="_blank" class="text-blue-600 hover:underline">Google Drive</a>).</li>
+                                    <li>Planejamento coletivo para continuidade do grupo.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Seção 5: Recursos -->
+                <section id="section-5" class="fade-in-section">
+                    <h3 class="flex items-center text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 border-b dark:border-gray-600 pb-2">
+                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="section-icon mr-3 text-ovg-blue"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m10 14-2 2 2 2"/><path d="m14 14 2 2-2 2"/></svg>
+                        5. Recursos Necessários
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm resource-cards-container">
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 resource-card hover:scale-105 hover:shadow-xl">
+                            <h4 class="font-bold text-gray-700 dark:text-gray-100">Humanos:</h4>
+                            <ul class="list-disc list-inside mt-2 text-gray-600 dark:text-gray-300">
+                                <li>Instrutor Mateus Correia</li>
+                                <li>Voluntários/convidados</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 resource-card hover:scale-105 hover:shadow-xl">
+                            <h4 class="font-bold text-gray-700 dark:text-gray-100">Materiais:</h4>
+                            <ul class="list-disc list-inside mt-2 text-gray-600 dark:text-gray-300">
+                                <li>Computadores com internet</li>
+                                <li>Webcams, microfones, etc.</li>
+                                <li>Softwares (<a href="https://colab.research.google.com/" target="_blank" class="text-blue-600 hover:underline">Google Colab</a>, <a href="https://www.python.org/" target="_blank" class="text-blue-600 hover:underline">Python</a>)</li>
+                                <li>Espaço físico colaborativo</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 resource-card hover:scale-105 hover:shadow-xl sm:col-span-2 md:col-span-1">
+                            <h4 class="font-bold text-gray-700 dark:text-gray-100">Registros:</h4>
+                            <ul class="list-disc list-inside mt-2 text-gray-600 dark:text-gray-300">
+                                <li>Ferramentas de edição</li>
+                                <li>Caderno de bordo/mural digital</li>
+                                <li>Repositório online (GitHub)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Seção 6: Impacto Esperado -->
+                <section id="section-6" class="fade-in-section">
+                     <h3 class="flex items-center text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 border-b dark:border-gray-600 pb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="section-icon mr-3 text-ovg-blue"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        6. Impacto Esperado do Projeto
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <!-- Card 1: Comunidade -->
+                        <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg flex items-start gap-4 hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
+                            <div class="flex-shrink-0 bg-blue-100 dark:bg-blue-900/50 p-3 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-ovg-blue dark:text-blue-300"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100">Comunidade Inovadora</h4>
+                                <p class="text-gray-600 dark:text-gray-300 mt-1">Formação de um núcleo sólido de jovens engajados com tecnologia e inovação.</p>
+                            </div>
+                        </div>
+                        <!-- Card 2: Soluções Reais -->
+                         <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg flex items-start gap-4 hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
+                            <div class="flex-shrink-0 bg-blue-100 dark:bg-blue-900/50 p-3 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-ovg-blue dark:text-blue-300"><path d="M15.042 21.672L13.684 16.6s.402-1.604 1.604-1.604l5.072 1.356s1.604.402 1.604 1.604l-1.356 5.072s-.402 1.604-1.604 1.604l-5.072-1.356s-1.604-.402-1.604-1.604z"/><path d="m4.93 4.93 2.12 2.12"/><path d="m2 12h3"/><path d="M12 2v3"/><path d="m4.93 19.07 2.12-2.12"/><path d="M19.07 4.93l-2.12 2.12"/><path d="M12 19v-3"/><path d="M7.5 10.5c.64.64 1.49 1 2.37 1.15L7.8 17.8a2.5 2.5 0 0 1-3.5-3.5l6.15-2.07c.15.88.51 1.73 1.15 2.37"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100">Soluções Reais Criadas</h4>
+                                <p class="text-gray-600 dark:text-gray-300 mt-1">Desenvolvimento de protótipos funcionais com aplicação de Inteligência Artificial.</p>
+                            </div>
+                        </div>
+                        <!-- Card 3: Repertório -->
+                         <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg flex items-start gap-4 hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
+                            <div class="flex-shrink-0 bg-blue-100 dark:bg-blue-900/50 p-3 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-ovg-blue dark:text-blue-300"><path d="M12 2a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h0a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3Z"/><path d="M6.38 8.44A8.44 8.44 0 0 1 12 6a8.44 8.44 0 0 1 5.62 2.44"/><path d="M18.8 13.55a4.22 4.22 0 0 1-1.2.95"/><path d="M5.2 13.55A4.22 4.22 0 0 0 6.4 14.5"/><path d="M15.23 18.42a4.22 4.22 0 0 1-2.03.58h-.4a4.22 4.22 0 0 1-3.8-3.22"/><path d="M12 10v4h2"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100">Repertório Ampliado</h4>
+                                <p class="text-gray-600 dark:text-gray-300 mt-1">Ampliação das competências técnicas, éticas e criativas dos participantes.</p>
+                            </div>
+                        </div>
+                        <!-- Card 4: Visibilidade -->
+                         <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg flex items-start gap-4 hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
+                            <div class="flex-shrink-0 bg-blue-100 dark:bg-blue-900/50 p-3 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-ovg-blue dark:text-blue-300"><path d="m15.477 12.89 1.515-1.515a.5.5 0 0 1 .707 0l1.919 1.919a.5.5 0 0 1 0 .707l-1.515 1.515a.5.5 0 0 1-.707 0l-1.919-1.919a.5.5 0 0 1 0-.707z"/><path d="m8.523 19.11-1.515-1.515a.5.5 0 0 1 0-.707l1.919-1.919a.5.5 0 0 1 .707 0l1.515 1.515a.5.5 0 0 1 0 .707l-1.919 1.919a.5.5 0 0 1-.707 0z"/><path d="m6 16-2 2"/><path d="m18 8-2-2"/><path d="m12.414 3.586-2.828 2.828"/><path d="m18.001 12.001-2.829-2.829"/><path d="m3.586 12.414 2.828-2.828"/><path d="m12.001 18.001 2.829-2.829"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100">Visibilidade e Conexão</h4>
+                                <p class="text-gray-600 dark:text-gray-300 mt-1">Participação ativa em eventos e feiras, conectando o clube ao ecossistema de inovação.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="section-7" class="fade-in-section">
+                    <h3 class="flex items-center text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 border-b dark:border-gray-600 pb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="section-icon mr-3 text-ovg-blue"><path d="M21.5 12c0-5.25-4.25-9.5-9.5-9.5S2.5 6.75 2.5 12s4.25 9.5 9.5 9.5c.93 0 1.83-.14 2.68-.39"/><path d="m13 13-1-4-4 1 1 4 4-1z"/><path d="m20.5 14.5-2 2-1.5-1.5"/></svg>
+                        7. Avaliação
+                    </h3>
+                    <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">A avaliação será realizada de forma participativa e reflexiva, baseada em:</p>
+                    <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 leading-relaxed space-y-2 staggered-list">
+                        <li>Escuta ativa dos participantes.</li>
+                        <li>Autoavaliação coletiva e registros colaborativos.</li>
+                        <li>Avaliação do nível de engajamento, frequência e colaboração.</li>
+                        <li>Apresentação pública dos resultados (protótipos, ideias, vídeos e discussões).</li>
+                    </ul>
+                </section>
+
+                <!-- Seção Gemini API -->
+                <section id="section-gemini" class="fade-in-section">
+                    <h3 class="flex items-center text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 border-b dark:border-gray-600 pb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="section-icon mr-3 text-ovg-blue"><path d="M12 8V4H8"/><path d="M16 4h-4"/><path d="M12 8h4"/><path d="M12 14v-2"/><path d="M16 12h-4"/><path d="M12 18v-2"/><path d="M12 12v-2"/><path d="m15.12 12.5-1.56 2.7"/><path d="m8.88 12.5 1.56 2.7"/><path d="M9.42 7.12 6.6 9.94"/><path d="m17.4 9.94-2.82-2.82"/><path d="m6.6 14.06 2.82 2.82"/><path d="m14.58 14.06-2.82 2.82"/></svg>
+                        Explorador de Projetos para o Centro de Excelência
+                    </h3>
+                    <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg border border-gray-200 dark:border-gray-600">
+                        <p class="text-gray-700 dark:text-gray-300 mb-4">Utilize esta ferramenta para explorar potenciais projetos. Insira uma área de interesse para gerar propostas inovadoras alinhadas aos objetivos do nosso clube.</p>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input type="text" id="gemini-prompt" placeholder="Ex: meio ambiente, arte, acessibilidade..." class="flex-grow p-2 border border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-ovg-blue">
+                            <button id="gemini-button" class="bg-ovg-blue text-white font-bold py-2 px-4 rounded-md hover:opacity-90 transition-opacity flex items-center justify-center">
+                                <span id="gemini-button-text">Explorar Possibilidades</span>
+                                <svg id="gemini-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="gemini-results" class="mt-6 space-y-4"></div>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Rodapé -->
+            <footer class="mt-12 pt-6 border-t-2 border-gray-100 dark:border-gray-700 text-center text-xs text-gray-400">
+                <p>Plano de Trabalho – Clube de Inteligência Artificial | Centro da Juventude Tecendo o Futuro</p>
+                <p class="mt-1">Criado por: Mateus Correia</p>
+            </footer>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Lógica da Barra de Progresso ---
+            const progressBar = document.getElementById('progress-bar');
+            window.addEventListener('scroll', () => {
+                const scrollTop = document.documentElement.scrollTop;
+                const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (scrollTop / scrollHeight) * 100;
+                if (progressBar) progressBar.style.width = scrolled + '%';
+            });
+
+            // --- Lógica da Navegação Rápida ---
+            const sections = document.querySelectorAll('main > section');
+            const navLinks = document.querySelectorAll('#quick-nav a');
+            const observerNav = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: '-40% 0px -60% 0px' });
+            sections.forEach(section => { if(section) observerNav.observe(section); });
+
+            // --- Lógica para Animação de Scroll (Fade-in e Contadores) ---
+            const observerFade = new IntersectionObserver((entries) => {
+                entries.forEach(entry => { 
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        
+                        const counters = entry.target.querySelectorAll('.counter');
+                        counters.forEach(counter => {
+                            if (counter.hasAttribute('data-animated')) return;
+                            counter.setAttribute('data-animated', 'true');
+                            const target = +counter.getAttribute('data-target');
+                            const duration = 1500;
+                            let start = 0;
+                            const stepTime = Math.abs(Math.floor(duration / target));
+                            const timer = setInterval(() => {
+                                start += 1;
+                                counter.textContent = start;
+                                if (start === target) {
+                                    clearInterval(timer);
+                                }
+                            }, stepTime);
+                        });
+                    }
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.fade-in-section').forEach(section => { if(section) observerFade.observe(section); });
+
+            // --- Lógica do Botão de Compartilhamento ---
+            const shareButton = document.getElementById('share-button');
+            if(shareButton) {
+                shareButton.addEventListener('click', async () => {
+                    const shareData = { title: document.title, text: 'Confira o Plano de Trabalho do Clube de Inteligência Artificial.', url: window.location.href };
+                    try {
+                        if (navigator.share) await navigator.share(shareData);
+                        else alert('A função de compartilhamento não é suportada neste navegador.');
+                    } catch (error) { console.error('Erro ao compartilhar:', error); }
+                });
+            }
+            
+            // --- Lógica do Modo Escuro ---
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const htmlElement = document.documentElement;
+            const moonIcon = document.getElementById('moon-icon');
+            const sunIcon = document.getElementById('sun-icon');
+            
+            htmlElement.classList.remove('dark');
+            if(moonIcon) moonIcon.classList.remove('hidden');
+            if(sunIcon) sunIcon.classList.add('hidden');
+
+            if(darkModeToggle) {
+                darkModeToggle.addEventListener('click', () => {
+                    htmlElement.classList.toggle('dark');
+                    if(moonIcon) moonIcon.classList.toggle('hidden');
+                    if(sunIcon) sunIcon.classList.toggle('hidden');
+                });
+            }
+
+            // --- Lógica da API do Gemini ---
+            const geminiButton = document.getElementById('gemini-button');
+            const geminiPrompt = document.getElementById('gemini-prompt');
+            const geminiResults = document.getElementById('gemini-results');
+            const geminiSpinner = document.getElementById('gemini-spinner');
+            const geminiButtonText = document.getElementById('gemini-button-text');
+
+            if (geminiButton) {
+                geminiButton.addEventListener('click', async () => {
+                    const promptText = geminiPrompt.value;
+                    if (!promptText) {
+                        alert('Por favor, digite um tema para gerar ideias.');
+                        return;
+                    }
+
+                    geminiButtonText.classList.add('hidden');
+                    geminiSpinner.classList.remove('hidden');
+                    geminiButton.disabled = true;
+                    geminiResults.innerHTML = '';
+                    
+                    const prompt = 'Você é um instrutor de um clube de tecnologia para jovens. Baseado no tema "' + promptText + '", gere 3 ideias de projetos de inteligência artificial que adolescentes de 12 a 21 anos possam desenvolver. Apresente cada ideia com "Título:", "Objetivo:" e "Ferramentas:". Separe cada ideia com "---".';
+
+                    try {
+                        const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                        const payload = { contents: chatHistory };
+                        const apiKey = "AIzaSyDfbry5IcUoM200nkuVeh81sAM4RKAmfK8"; 
+                        const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey;
+                        
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error('Erro na API: ' + response.statusText);
+                        }
+
+                        const result = await response.json();
+                        
+                        if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                            const rawText = result.candidates[0].content.parts[0].text;
+                            const cleanedText = rawText.replace(/\*/g, ''); // Remove todos os asteriscos
+                            const ideas = cleanedText.split('---').map(idea => idea.trim());
+                            
+                            ideas.forEach(ideaText => {
+                                if (!ideaText) return;
+                                const titleMatch = ideaText.match(/Título:(.*?)(Objetivo:)/s);
+                                const objetivoMatch = ideaText.match(/Objetivo:(.*?)(Ferramentas:)/s);
+                                const ferramentasMatch = ideaText.match(/Ferramentas:(.*)/s);
+
+                                const title = titleMatch ? titleMatch[1].trim() : "Ideia sem título";
+                                const objetivo = objetivoMatch ? objetivoMatch[1].trim() : "Sem objetivo definido.";
+                                const ferramentas = ferramentasMatch ? ferramentasMatch[1].trim() : "Nenhuma ferramenta sugerida.";
+
+                                const card = document.createElement('div');
+                                card.className = 'bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600';
+                                
+                                let cardHTML = '<h4 class="font-bold text-lg text-ovg-blue dark:text-blue-300">' + title + '</h4>';
+                                cardHTML += '<p class="mt-2 text-gray-700 dark:text-gray-300"><strong class="font-medium">Objetivo:</strong> ' + objetivo + '</p>';
+                                cardHTML += '<p class="mt-2 text-gray-700 dark:text-gray-300"><strong class="font-medium">Ferramentas:</strong> ' + ferramentas + '</p>';
+                                
+                                card.innerHTML = cardHTML;
+                                geminiResults.appendChild(card);
+                            });
+                        } else {
+                             throw new Error("A resposta da API está vazia ou em formato inesperado.");
+                        }
+
+                    } catch (error) {
+                        console.error('Erro ao chamar a API do Gemini:', error);
+                        geminiResults.innerHTML = '<p class="text-red-500">Ocorreu um erro ao gerar as ideias. Tente novamente mais tarde.</p>';
+                    } finally {
+                        geminiButtonText.classList.remove('hidden');
+                        geminiSpinner.classList.add('hidden');
+                        geminiButton.disabled = false;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
